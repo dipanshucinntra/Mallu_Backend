@@ -1,0 +1,125 @@
+import requests, json
+import time
+import math
+import mysql.connector
+import pandas as pd
+import numpy as np
+import os
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="$Bridge@2022#",
+  database="vision_dev"
+)
+#mycursor = mydb.cursor(dictionary=True)
+print("test comment")
+
+
+############# start data from local sql#########
+try:
+    #SQL_Query = pd.read_sql_query('select ItemCode, InStock from Item_item', mydb)
+    SQL_Query = pd.read_sql_query('SELECT * FROM `Item_item`', mydb)    
+    local_item = pd.DataFrame(SQL_Query, columns=['id', 'ItemCode', 'InStock'])
+    #local_item.drop(local_item.loc[local_item['ItemCode']=='002052040M'].index, inplace=True) #working
+    #local_item = local_item[local_item['ItemCode'] != '002052040M'] # working
+    local_item.set_index("id", inplace = True)
+    print(local_item)
+    #for itm in local_item.index:
+        #print(str(local_item['ItemCode'][itm])+"^t"+str(local_item['InStock'][itm]))
+    
+    ############# end data from local sql#########
+
+    #cdir = os.getcwd()
+    #cdir = cdir.split("bridge")
+    #dbjson = str(cdir[0])+"bridge/bridge/db.json"
+    #print(dbjson)
+
+    #with open(dbjson) as f:
+    with open("/home/www/b2b/vision_dev/bridge/bridge/db.json") as f:
+        db = f.read()
+        print(db)
+    data = json.loads(db)
+
+    r = requests.post('http://122.160.67.60:50001/b1s/v1/Login', data=json.dumps(data), verify=False)
+    token = json.loads(r.text)['SessionId']
+    print(token)
+
+    count = requests.get("http://122.160.67.60:50001/b1s/v1/Items/$count", cookies=r.cookies, verify=False).text
+    print(count)
+
+    ############# start data from server sap #########
+    res = requests.get("http://122.160.67.60:50001/b1s/v1/Items?$select=ItemCode,QuantityOnStock", cookies=r.cookies, headers={"Prefer":"odata.maxpagesize="+str(count)+""}, verify=False)
+    #res = requests.get("http://122.160.67.60:50001/b1s/v1/DistributionRules?$select=FactorCode,FactorDescription&$filter=InWhichDimension eq 2", cookies=r.cookies, verify=False)
+    whs = json.loads(res.text)
+    print(len(whs['value']))
+
+    server_item = pd.DataFrame(whs['value'], columns=['ItemCode', 'QuantityOnStock'])
+    server_item.index +=1
+    #server_item.set_index("ItemCode", inplace = True)
+    print(server_item)
+    print(server_item.dtypes)
+    server_item["QuantityOnStock"] = server_item["QuantityOnStock"].astype(float).astype(int)
+    print(server_item.dtypes)
+    print(server_item)
+    #exit()
+    ############# end data from server sap #########
+
+
+    print("check missing_values")
+    missing_values = set(local_item.iloc[:, 0]).symmetric_difference(set(server_item.iloc[:, 0]))
+    print(missing_values)
+
+    for miss in missing_values:
+        print(miss)
+        local_item.drop(local_item.loc[local_item['ItemCode']==miss].index, inplace=True)
+        server_item.drop(server_item.loc[server_item['ItemCode']==miss].index, inplace=True)
+
+    local_item = local_item.reset_index(drop=True)
+    server_item = server_item.reset_index(drop=True)
+
+    #local_item.sort_values(by=['ItemCode'], ascending=True)
+    #server_item.sort_values(by=['ItemCode'], ascending=True)
+
+    print('------clean-----')
+    print(len(local_item))
+    print(len(server_item))
+
+    print(local_item)
+    print(server_item)
+
+    #local_item.drop(local_item.loc[local_item['ItemCode']=='002052040M'].index, inplace=True) #working
+
+    ############# start data cpmpare #########
+
+    #local_item['QuantityOnStock'] = server_item['QuantityOnStock']
+    #local_item['stock_match'] = np.where(local_item['InStock'] == server_item['QuantityOnStock'], "True", "False")
+    #local_item.sort_index(inplace=False)
+
+    try:
+        server_item_diff = server_item.loc[local_item['InStock'] != server_item['QuantityOnStock']]
+        print(len(server_item_diff))
+        if len(server_item_diff) !=0:
+            print(server_item_diff)
+            for it in server_item_diff['ItemCode']:
+                print(it)
+                itm = server_item.loc[it == server_item['ItemCode']]
+                stk = itm['QuantityOnStock'].to_string(index=False)
+                sql ="update Item_item SET InStock='"+str(stk).strip()+"' where ItemCode='"+str(it)+"'"
+                print(sql)
+                mycursor.execute(sql)
+                mydb.commit()
+                #print(itm['QuantityOnStock'])
+
+    except Exception as e:
+        print(e)
+
+
+    mydb.close()
+
+
+except Exception as e:
+    print(str(e))
+
+############# end data from local sql#########
+

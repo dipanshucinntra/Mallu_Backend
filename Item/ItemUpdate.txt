@@ -1,0 +1,81 @@
+import requests, json
+import time
+import math
+import mysql.connector
+import pandas as pd
+import numpy as np
+import os
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="$Bridge@2022#",
+  database="vision_dev"
+)
+#mycursor = mydb.cursor(dictionary=True)
+print("test comment")
+
+
+############# start data from local sql#########
+try:
+    #SQL_Query = pd.read_sql_query('select ItemCode, InStock from Item_item', mydb)
+    SQL_Query = pd.read_sql_query('SELECT * FROM `Item_item`', mydb)    
+    local_item = pd.DataFrame(SQL_Query, columns=['ItemCode'])
+    #local_item.drop(local_item.loc[local_item['ItemCode']=='002052040M'].index, inplace=True) #working
+    #local_item = local_item[local_item['ItemCode'] != '002052040M'] # working
+    #local_item.set_index("ItemCode", inplace = True)
+    print(local_item)
+except:
+    print("Error: unable to convert the data")
+
+
+############# end data from local sql#########
+
+#with open("/home/www/b2b/vision_dev/bridge/bridge/db.json") as f:
+#cdir = os.getcwd()
+#cdir = cdir.split("bridge")
+#dbjson = str(cdir[0])+"bridge/bridge/db.json"
+#print(dbjson)
+
+#with open(dbjson) as f:
+with open("/home/www/b2b/vision_dev/bridge/bridge/db.json") as f:
+    db = f.read()
+    print(db)
+data = json.loads(db)
+
+r = requests.post('http://122.160.67.60:50001/b1s/v1/Login', data=json.dumps(data), verify=False)
+token = json.loads(r.text)['SessionId']
+print(token)
+
+count = requests.get("http://122.160.67.60:50001/b1s/v1/Items/$count", cookies=r.cookies, verify=False).text
+print(count)
+
+############# start data from server sap #########
+res = requests.get("http://122.160.67.60:50001/b1s/v1/Items?$select=ItemCode,ItemName,ItemsGroupCode,U_DIV,QuantityOnStock", cookies=r.cookies, headers={"Prefer":"odata.maxpagesize="+str(count)+""}, verify=False)
+#res = requests.get("http://122.160.67.60:50001/b1s/v1/DistributionRules?$select=FactorCode,FactorDescription&$filter=InWhichDimension eq 2", cookies=r.cookies, verify=False)
+whs = json.loads(res.text)
+print(len(whs['value']))
+
+server_item = pd.DataFrame(whs['value'], columns=['ItemCode', 'ItemName', 'ItemsGroupCode', 'U_DIV', 'QuantityOnStock'])
+#server_item.set_index("ItemCode", inplace = True)
+print(server_item)
+############# end data from server sap #########
+
+
+print("check missing_values")
+missing_values = set(local_item.iloc[:, 0]).symmetric_difference(set(server_item.iloc[:, 0]))
+print(missing_values)
+
+for miss in missing_values:
+    item = server_item.loc[server_item['ItemCode']==miss.strip()]
+    item1 = local_item.loc[local_item['ItemCode']==miss.strip()]
+    print(len(item1))
+    if len(item) !=0 and len(item1) == 0:
+        ItemName = item['ItemName'].to_string(index=False)
+        ItemName = ItemName.replace("'", "''")
+        price = str(0)
+        item_sql = "INSERT INTO `Item_item` (`UnitPrice`, `Currency`, `DiscountPercent`, `ItemCode`, `TaxCode`, `ItemName`, `U_DIV`, `ItemsGroupCode_id`, `InStock`) VALUES ('"+price+"', 'INR', '0', '"+str(item['ItemCode'].to_string(index=False)).strip()+"', 'IGST12', '"+str(ItemName).strip()+"', '"+str(item['U_DIV'].to_string(index=False)).strip()+"', '"+str(item['ItemsGroupCode'].to_string(index=False)).strip()+"', '"+str(item['QuantityOnStock'].to_string(index=False)).strip()+"');"
+        print(item_sql)
+        print(str(item['ItemCode'].to_string(index=False)))
+        mycursor.execute(item_sql)
+        mydb.commit()

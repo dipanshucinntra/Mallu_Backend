@@ -1,0 +1,73 @@
+---for create opp--
+
+{
+	"CardCode": "C00002",
+	"SalesPerson": "5",
+	"ContactPerson": "7",
+	"Source": "None",
+	"StartDate": "2021-04-15",
+	"PredictedClosingDate": "2021-04-23",
+	"MaxLocalTotal": "5.0",
+	"MaxSystemTotal": "0.075758",
+	"Remarks": "dd",
+
+	"SalesOpportunitiesLines": [
+		{
+		  "DocumentType": "bodt_MinusOne",
+		  "MaxLocalTotal": request.data['MaxLocalTotal'],
+		  "MaxSystemTotal": request.data['MaxSystemTotal'],
+		  "SalesPerson": request.data['SalesPerson'],
+		  "StageKey": request.data['CurrentStageNo']
+		}
+	  ],
+
+	"Status": "sos_Open",
+	"ReasonForClosing": "None",
+	"TotalAmountLocal": "5.0",
+	"TotalAmounSystem": "0.075758",
+	"CurrentStageNo": "2",
+	"OpportunityName": "noidaniPk create by bridge 10",
+	"Industry": "None",
+	"LinkedDocumentType": "None",
+	"StatusRemarks": "None",
+	"ProjectCode": "None",
+	"CustomerName": "HDFC",
+	"ClosingDate": "None",
+	"ClosingType": "sos_Days",
+	"OpportunityType": "boOpSales",
+	"UpdateDate": "25-10-2021",
+	"UpdateTime": "12:30:00 PM",
+	"U_TYPE": "Existing Business"
+}
+
+---for update opp--
+{
+            "id": 82,
+            "SequentialNo": "68",
+            "CardCode": "C00002",
+            "SalesPerson": "5",
+            "ContactPerson": "7",
+            "Source": "None",
+            "StartDate": "2021-04-15",
+            "PredictedClosingDate": "2021-04-23",
+            "MaxLocalTotal": "5.0",
+            "MaxSystemTotal": "0.075758",
+            "Remarks": "dd",
+            "Status": "sos_Open",
+            "ReasonForClosing": "None",
+            "TotalAmountLocal": "5.0",
+            "TotalAmounSystem": "0.075758",
+            "CurrentStageNo": "2",
+            "OpportunityName": "noidaniPk create by bridge 40",
+            "Industry": "None",
+            "LinkedDocumentType": "None",
+            "StatusRemarks": "None",
+            "ProjectCode": "None",
+            "CustomerName": "HDFC",
+            "ClosingDate": "None",
+            "ClosingType": "sos_Days",
+            "OpportunityType": "boOpSales",
+            "UpdateDate": "25-10-2021",
+            "UpdateTime": "12:30:00 PM",
+            "U_TYPE": "Existing Business"
+        }

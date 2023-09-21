@@ -1,0 +1,23 @@
+        @GET("b1s/v1/Quotations?$apply=aggregate($count as Count)")
+
+
+http://103.234.187.35:50001/b1s/v1/SalesOpportunity?$filter=SequenceNo ge 10 &$orderby=SequenceNo&$top=10&$skip=1
+
+
+http://103.234.187.35:50001/b1s/v1/SalesOpportunities?$filter=SequentialNo ge 10 &$orderby=SequentialNo&$top=10&$skip=1
+
+
+http://103.234.187.35:50001/b1s/v1/SalesOpportunities?$filter=SequentialNo ge 20 &$orderby=SequentialNo
+
+
+http://103.234.187.35:50001/b1s/v1/SalesOpportunities?$filter=SequentialNo ge 20 &$orderby=SequentialNo
+
+
+count stage in hana
+http://103.234.187.35:50001/b1s/v1/SalesStages?$apply=aggregate($count as Count)
+
+http://103.234.187.35:50001/b1s/v1/SalesStages?$filter=SequenceNo ge 2 & $orderby=SequenceNo
+
+
+max in stage 
+SELECT max(`SequenceNo`) FROM `opportunity_stage`

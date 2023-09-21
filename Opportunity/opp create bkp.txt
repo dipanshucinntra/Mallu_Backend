@@ -1,0 +1,120 @@
+
+
+    CardCode = request.data['CardCode']
+    SalesPerson = request.data['SalesPerson']
+    ContactPerson = request.data['ContactPerson']
+    Source = request.data['Source']
+    StartDate = request.data['StartDate']
+    PredictedClosingDate = request.data['PredictedClosingDate']
+    MaxLocalTotal = request.data['MaxLocalTotal']
+    MaxSystemTotal = request.data['MaxSystemTotal']
+    Remarks = request.data['Remarks']
+    
+    Status = request.data['Status']
+    ReasonForClosing = request.data['ReasonForClosing']
+    TotalAmountLocal = request.data['TotalAmountLocal']
+    TotalAmounSystem = request.data['TotalAmounSystem']
+    CurrentStageNo = request.data['CurrentStageNo']
+    OpportunityName = request.data['OpportunityName']
+    Industry = request.data['Industry']
+    LinkedDocumentType = request.data['LinkedDocumentType']
+    StatusRemarks = request.data['StatusRemarks']
+    ProjectCode = request.data['ProjectCode']
+    CustomerName = request.data['CustomerName']
+    ClosingDate = request.data['ClosingDate']
+    ClosingType = request.data['ClosingType']
+    OpportunityType = request.data['OpportunityType']
+    UpdateDate = request.data['UpdateDate']
+    UpdateTime = request.data['UpdateTime']
+    U_TYPE = request.data['U_TYPE']
+
+    model = Opportunity(CardCode=CardCode, SalesPerson=SalesPerson, ContactPerson=ContactPerson, Source=Source, StartDate=StartDate, PredictedClosingDate=PredictedClosingDate, MaxLocalTotal=MaxLocalTotal, MaxSystemTotal=MaxSystemTotal, Remarks=Remarks, Status=Status, ReasonForClosing=ReasonForClosing, TotalAmountLocal=TotalAmountLocal, TotalAmounSystem=TotalAmounSystem, CurrentStageNo=CurrentStageNo, OpportunityName=OpportunityName, Industry=Industry, LinkedDocumentType=LinkedDocumentType, StatusRemarks=StatusRemarks, ProjectCode=ProjectCode, CustomerName=CustomerName, ClosingDate=ClosingDate, ClosingType=ClosingType, OpportunityType=OpportunityType, UpdateDate=UpdateDate, UpdateTime=UpdateTime, U_TYPE=U_TYPE)
+
+    model.save()
+    
+    Opp = Opportunity.objects.latest('id')
+    print(Opp.id)
+    
+    LineNum = "0"
+    SalesPerson = request.data['SalesOpportunitiesLines'][0]['SalesPerson']
+    ContactPerson = request.data['ContactPerson']
+    StartDate = request.data['StartDate']
+    MaxLocalTotal = request.data['SalesOpportunitiesLines'][0]['MaxLocalTotal']
+    MaxSystemTotal = request.data['SalesOpportunitiesLines'][0]['MaxSystemTotal']
+    Remarks = request.data['Remarks']
+    Contact="tNO"
+    Status = "so_Open"
+    StageKey = request.data['SalesOpportunitiesLines'][0]['StageKey']
+    ClosingDate = request.data['ClosingDate']
+    #SequenceNo = request.data['SequentialNo']
+    Opp_Id = Opp.id
+    
+    model_line = Line(LineNum=LineNum, SalesPerson=SalesPerson, StartDate=StartDate, StageKey=StageKey, MaxLocalTotal=MaxLocalTotal, MaxSystemTotal=MaxSystemTotal, Remarks=Remarks, Contact=Contact, Status=Status, ContactPerson=ContactPerson, ClosingDate=ClosingDate,Opp_Id=Opp_Id)    
+    
+    model_line.save()
+    
+    
+    # SequenceNo = request.data['SequenceNo']
+    # Name = request.data['Name']
+    # Stageno = float(request.data['Stageno']) + float(.1)
+    # ClosingPercentage = request.data['ClosingPercentage']
+    # Cancelled = request.data['Cancelled']
+    # IsSales = request.data['IsSales']
+    # IsPurchasing = request.data['IsPurchasing']
+    # Opp_Id = request.data['Opp_Id']
+    # print(Stageno)
+    # model = Stage(SequenceNo=SequenceNo, Name=Name, Stageno=Stageno, ClosingPercentage=ClosingPercentage, Cancelled=Cancelled, IsSales=IsSales, IsPurchasing=IsPurchasing, Opp_Id=Opp_Id)    
+    # model.save()
+    
+    
+    data = {"CompanyDB":"TEST","Password":"Qwer1234","UserName":"manager"}
+
+    r = requests.post('http://103.234.187.35:50001/b1s/v1/Login', data=json.dumps(data), verify=False)
+    token = json.loads(r.text)['SessionId']
+    print(token)
+    
+    opp_data = {
+      "CardCode": request.data['CardCode'],
+      "PredictedClosingDate": request.data['PredictedClosingDate'],
+      "ContactPerson": request.data['ContactPerson'],
+      "MaxLocalTotal": request.data['MaxLocalTotal'],
+      "MaxSystemTotal": request.data['MaxSystemTotal'],
+      "Remarks": request.data['Remarks'],
+      "SalesOpportunitiesLines": [
+        {
+          "DocumentType": "bodt_MinusOne",
+          "MaxLocalTotal": request.data['SalesOpportunitiesLines'][0]['MaxLocalTotal'],
+          "MaxSystemTotal": request.data['SalesOpportunitiesLines'][0]['MaxSystemTotal'],
+          "SalesPerson": request.data['SalesOpportunitiesLines'][0]['SalesPerson'],
+          "StageKey": request.data['SalesOpportunitiesLines'][0]['StageKey']
+        }
+      ],
+      "SalesPerson": request.data['SalesPerson'],
+      "StartDate": request.data['StartDate'],
+      "U_TYPE": request.data['U_TYPE'],
+      "OpportunityName": request.data['OpportunityName']
+    }
+    #print(opp_data)
+    
+    res = requests.post('http://103.234.187.35:50001/b1s/v1/SalesOpportunities', data=json.dumps(opp_data), cookies=r.cookies, verify=False)
+    #print(res.text);
+    live = json.loads(res.text)
+    
+    if "SequentialNo" in live:
+        print(live['SequentialNo'])
+        
+        fetchid = Opp.id
+        model = Opportunity.objects.get(pk = fetchid)
+        model.SequentialNo = live['SequentialNo']
+        model.save()
+        
+        model = Line.objects.get(LineNum = 0, Opp_Id=Opp.id)
+        model.SequenceNo = live['SequentialNo']
+        model.save()
+        
+        return Response({"message":"successful","status":"200","data":[]})
+    else:
+        print(live['error']['message']['value'])
+        SAP_MSG = live['error']['message']['value']
+        return Response({"message":"Partely successful","SAP_error":SAP_MSG, "status":"201","data":[]})
+    

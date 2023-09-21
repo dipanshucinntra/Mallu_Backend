@@ -1,0 +1,9 @@
+id,EmployeeID,EmployeeCode,LastName,FirstName,MiddleName,Gender,HomeCountry,HomeState,DateOfBirth,MartialStatus,PassportNumber,PassportExpirationDate,PassportIssueDate,MobilePhone,eMail,SalesPersonCode,U_EMPMASTE,Active,U_Password,U_Role,U_ReportingTo,CreateDate,CreateTime,UpdateDate,UpdateTime
+1,1,E001,,Nipun,,Male,,,,,,,,,,,Management,tYES,123,admin,,11/4/2022,13:10:29,11/4/2022,13:10:29
+2,2,E002,,Bhuppi,,Male,,,,,,,,,,,Management,tYES,123,Hod,E001,11/4/2022,13:10:29,11/4/2022,13:10:29
+3,3,E003,,Sunil,,Male,,,,,,,,,,,Management,tYES,123,Hod,E001,11/4/2022,13:10:29,11/4/2022,13:10:29
+4,4,E004,,Millan,,Male,,,,,,,,,,,Employee,tYES,123,Employee,E003,11/4/2022,13:10:29,11/4/2022,13:10:29
+5,5,E005,,Abhisekh,,Male,,,,,,,,,,,Employee,tYES,123,Employee,E003,11/4/2022,13:10:29,11/4/2022,13:10:29
+6,6,E006,,Pankaj,,Male,,,,,,,,,,,Employee,tYES,123,Employee,E002,11/4/2022,13:10:29,11/4/2022,13:10:29
+7,7,E007,,Rahul,,Male,,,,,,,,,,,Employee,tYES,123,Employee,E002,11/4/2022,13:10:29,11/4/2022,13:10:29
+8,8,E008,,Rakesh,,Male,,,,,,,,,,,Management,tYES,123,Desk-Manager,E001,11/4/2022,13:10:29,11/4/2022,13:10:29

@@ -1,0 +1,67 @@
+import requests, json
+import time
+import math
+import mysql.connector
+import os
+
+def none(inp):
+	if type(inp)!=int:
+		return 0;
+	else:
+		return inp
+
+
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="$Bridge@2022#",
+  database="vision_dev"
+)
+#mycursor = mydb.cursor()
+print("test comment")
+
+cdir = os.getcwd()
+cdir = cdir.split("bridge")
+dbjson = str(cdir[0])+"bridge/bridge/db.json"
+
+with open(dbjson) as f:
+    db = f.read()
+    print(db)
+data = json.loads(db)
+
+r = requests.post('http://122.160.67.60:50001/b1s/v1/Login', data=json.dumps(data), verify=False)
+token = json.loads(r.text)['SessionId']
+print(token)
+
+count = requests.get("http://122.160.67.60:50001/b1s/v1/Items/$count", cookies=r.cookies, verify=False).text
+print(count)
+
+############# start data from server sap #########
+res = requests.get("http://122.160.67.60:50001/b1s/v1/Items?$select=ItemCode,ItemName,ItemsGroupCode,U_DIV,QuantityOnStock", cookies=r.cookies, headers={"Prefer":"odata.maxpagesize="+str(count)+""}, verify=False)
+
+items = json.loads(res.text)
+
+for item in items['value']:
+    print('-----Item---')
+    print(item['ItemName'])
+    ItemName = item['ItemName'].replace("'", "''")
+    print(item['ItemCode'])
+    #print(item['ItemPrices'][0]['Price'])
+    #price = str(none(item['ItemPrices'][0]['Price']))
+    price = str(0)
+    
+    print("select ItemCode from Item_item where ItemCode='"+str(item['ItemCode'])+"'")
+    mycursor.execute("select * from Item_item1 where ItemCode='"+str(item['ItemCode'])+"'")
+    mycursor.fetchall()
+    rc = mycursor.rowcount
+    print(rc)
+    if rc != 1:
+        item_sql = "INSERT INTO `Item_item1` (`UnitPrice`, `Currency`, `DiscountPercent`, `ItemCode`, `TaxCode`, `ItemName`, `U_DIV`, `ItemsGroupCode_id`, `InStock`) VALUES ('"+price+"', 'INR', '0', '"+str(item['ItemCode']).strip()+"', 'IGST12', '"+str(ItemName).strip()+"', '"+str(item['U_DIV']).strip()+"', '"+str(item['ItemsGroupCode']).strip()+"', '"+str(item['QuantityOnStock']).strip()+"');"
+        print(item_sql)
+        mycursor.execute(item_sql)
+        mydb.commit()
+    #itemid = mycursor.lastrowid
+    #print(itemid)
+
+print('___')
+

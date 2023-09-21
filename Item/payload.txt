@@ -1,0 +1,8 @@
+-----Create-----
+{
+	"UnitPrice": 120.0,
+	"Currency":"INR",
+	"DiscountPercent": "1",
+	"ItemCode": "IT0001",
+	"TaxCode": "Service"
+}

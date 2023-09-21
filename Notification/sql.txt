@@ -1,0 +1,13 @@
+SELECT * FROM `activity_activity_` WHERE `From` >= "10-01-2022";
+
+SELECT cast(`From` as date) FROM `activity_activity`
+
+SELECT * FROM `activity_activity` where cast(`From` as date) >='2022-01-05';
+
+
+SELECT * FROM `activity_activity_` WHERE `From` >= "2021-12-28";
+
+SELECT * FROM `activity_activity_` WHERE `From` <= "2022-01-06" and `To` >= "2022-01-06";
+
+SELECT * FROM `activity_activity_` WHERE `From` <= "2022-01-06" and `To` >= "2022-01-06" and `Time`="05:10 PM";
+
