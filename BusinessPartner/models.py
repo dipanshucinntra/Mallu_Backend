@@ -97,6 +97,11 @@ class BusinessPartner(models.Model):
     Venue = models.CharField(max_length=60, blank=True)
     Reference = models.CharField(max_length=60, blank=True)
     NumberVisits = models.CharField(max_length=60, blank=True)
+    #Added
+    Menu = models.CharField(max_length=100, blank=True)
+
+
+    
 
 class BPBranch(models.Model):
     BPID = models.CharField(max_length=4, blank=True)

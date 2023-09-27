@@ -94,6 +94,7 @@ def create(request):
         Venue = leads['Venue']
         Reference = leads['Reference']
         NumberVisits = leads['NumberVisits']
+        Menu = leads['Menu']
         
         # print(companyName) 
         # print(phoneNumber) 
@@ -120,7 +121,7 @@ def create(request):
                        intProjCat = intProjCat,country = country,country_code = country_code,state = state,
                        state_code = state_code,city = city, AttendedBy=AttendedBy, VisitDate=VisitDate, ContactTwo=ContactTwo,
                        FunctionDate=FunctionDate, FunctionType=FunctionType, Venue=Venue, Reference=Reference, 
-                       NumberVisits=NumberVisits)
+                       NumberVisits=NumberVisits, Menu=Menu)
             model.save()
             LeadID = Lead.objects.latest('id')
             # print("LeadID :", LeadID, "LeadID Type:", type(LeadID))
@@ -159,7 +160,7 @@ def create(request):
                     
                     bp_model = BusinessPartner(CardName=CardName, EmailAddress=EmailAddress, Phone1=Phone1, CreateDate=CreateDate,
                         CreateTime=CreateTime, CreatedBy=CreatedBy, AttendedBy=AttendedBy, VisitDate=VisitDate, ContactTwo=ContactTwo,
-                        FunctionDate=FunctionDate, FunctionType=FunctionType, Venue=Venue, Reference=Reference, NumberVisits=NumberVisits)              
+                        FunctionDate=FunctionDate, FunctionType=FunctionType, Venue=Venue, Reference=Reference, NumberVisits=NumberVisits, Menu=Menu)              
                     bp_model.save() 
                     ######################## For CardCode ####################  
                     bp = BusinessPartner.objects.latest('id')
@@ -1234,6 +1235,7 @@ def update(request):
                 model.Venue = request.data['Venue']
                 model.Reference = request.data['Reference']
                 model.NumberVisits = request.data['NumberVisits']
+                model.Menu = request.data['Menu']
                 model.save()
                 if request.data['status'] == "Qualified":
                     Subject = request.data['companyName']
@@ -1262,15 +1264,15 @@ def update(request):
                     Reference = request.data['Reference']
                     NumberVisits = request.data['NumberVisits']
                     try:
-                        ##################### Activatiy Create ######################### 
-                        activity_obj = Activity(SourceID=SourceID, Subject=Subject, Comment=Comment, Emp=Emp, From=From, 
-                                        To=To, Time=Time, Type=Type, SourceType=SourceType, CreateDate=CreateDate, 
-                                        CreateTime=CreateTime, leadType=leadType)      
-                        activity_obj.save()
+                        # ##################### Activatiy Create ######################### 
+                        # activity_obj = Activity(SourceID=SourceID, Subject=Subject, Comment=Comment, Emp=Emp, From=From, 
+                        #                 To=To, Time=Time, Type=Type, SourceType=SourceType, CreateDate=CreateDate, 
+                        #                 CreateTime=CreateTime, leadType=leadType)      
+                        # activity_obj.save()
                         ##################### Business Partner Create #########################                    
                         bp_model = BusinessPartner(CardName=CardName, EmailAddress=EmailAddress, Phone1=Phone1, CreateDate=CreateDate,
                             CreateTime=CreateTime, CreatedBy=CreatedBy, AttendedBy=AttendedBy, VisitDate=VisitDate, ContactTwo=ContactTwo,
-                            FunctionDate=FunctionDate, FunctionType=FunctionType, Venue=Venue, Reference=Reference, NumberVisits=NumberVisits)              
+                            FunctionDate=FunctionDate, FunctionType=FunctionType, Venue=Venue, Reference=Reference, NumberVisits=NumberVisits, Menu=request.data['Menu'])              
                         bp_model.save() 
                         ######################## For CardCode ####################  
                         bp = BusinessPartner.objects.latest('id')
@@ -1985,9 +1987,9 @@ def all_pagination(request):
         if json_data['MaxItem'] !="":
             MaxItem = json_data['MaxItem']
         else:
-            MaxItem = "10"
-        leads_obj =Lead.objects.filter(junk=0).order_by("-id")
+            MaxItem = "10"          
 
+        leads_obj =Lead.objects.filter(junk=0).order_by("-id")
 
         if json_data['assignedTo'] !="":
             SalesPersonID = json_data['assignedTo']
@@ -2000,7 +2002,7 @@ def all_pagination(request):
         if json_data['FunctionFromDate'] !="":
             leads_obj = leads_obj.filter(FunctionDate__gte=json_data['FunctionFromDate'])
         if json_data['FunctionToDate'] !="":
-            leads_obj = leads_obj.filter(FunctionDate__lte=json_data['FunctionToDate'])    
+            leads_obj = leads_obj.filter(FunctionDate__lte=json_data['FunctionToDate'])      
         if json_data['Source'] !="":
             leads_obj = leads_obj.filter(source_id=json_data['Source'])  
         if json_data['Status'] !="":

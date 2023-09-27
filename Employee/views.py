@@ -467,8 +467,7 @@ def dashboard(request):
             sale_diff = sum(tgt_all.values_list('sale_diff', flat=True))
             print(sale_diff)
 
-            notification = Notification.objects.filter(
-                Emp=emp_obj.id, CreatedDate=tdate, Read=0).order_by("-id").count()
+            notification = Notification.objects.filter(CreatedDate=tdate).order_by("-id").count()
             print(notification)
 
             ord_over = Order.objects.filter(

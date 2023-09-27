@@ -18,6 +18,8 @@ from django.db.models import Q
 from Attachment.models import Attachment
 from Attachment.serializers import AttachmentSerializer
 
+from Activity.models import Activity
+
 from rest_framework.decorators import api_view    
 from rest_framework import serializers
 from rest_framework.response import Response
@@ -44,8 +46,8 @@ time = dt.now(timezone("Asia/Kolkata")).strftime('%H:%M %p')
 #Order Create API
 @api_view(['POST'])
 def create(request):
-    try:
-        print("reqyesssssssssssssssssssssssssssssssss", request.data)
+    # try:
+        print("reqyes", request.data)
         TaxDate = request.data['TaxDate']
         DocDueDate = request.data['DocDueDate']
         ContactPersonCode = request.data['ContactPersonCode']
@@ -135,7 +137,7 @@ def create(request):
         Decorations= request.data['Decorations']
         DJ= request.data['DJ'] 
         Fans = request.data['Fans']   
-        OptionalCustomerName = request.data['OptionalCustomerName']  
+        OptionalCustomerName = request.data['OptionalCustomerName']      
         # lines = json.loads(request.data['DocumentLines'])
         DocTotal=0
         # for line in lines:
@@ -175,6 +177,7 @@ def create(request):
             ORD = "ORD"+str(format(fetchid, '05'))
             model = Order.objects.get(pk = fetchid)            
             model.OrdNo = ORD
+            model.DocEntry = fetchid
             model.save()
             
             #added by millan on 12-10-2022
@@ -207,12 +210,18 @@ def create(request):
             return Response({"message":str(e),"status":201,"data":[]})
         try:
             addr = json.loads(request.data['AddressExtension'])
-            model_add = AddressExtension(OrderID = qt.id, BillToBuilding = addr['BillToBuilding'], ShipToState = addr['ShipToState'], BillToCity = addr['BillToCity'], ShipToCountry = addr['ShipToCountry'], BillToZipCode = addr['BillToZipCode'], ShipToStreet = addr['ShipToStreet'], BillToState = addr['BillToState'], ShipToZipCode = addr['ShipToZipCode'], BillToStreet = addr['BillToStreet'], ShipToBuilding = addr['ShipToBuilding'], ShipToCity = addr['ShipToCity'], BillToCountry = addr['BillToCountry'], U_SCOUNTRY = addr['U_SCOUNTRY'], U_SSTATE = addr['U_SSTATE'], U_SHPTYPB = addr['U_SHPTYPB'], U_BSTATE = addr['U_BSTATE'], U_BCOUNTRY = addr['U_BCOUNTRY'], U_SHPTYPS = addr['U_SHPTYPS'])
+            model_add = AddressExtension(OrderID = qt.id, BillToBuilding = addr['BillToBuilding'], ShipToState = addr['ShipToState'], BillToCity = addr['BillToCity'], ShipToCountry = addr['ShipToCountry'], BillToZipCode = addr['BillToZipCode'], ShipToStreet = addr['ShipToStreet'], BillToState = addr['BillToState'], ShipToZipCode = addr['ShipToZipCode'], BillToStreet = addr['BillToStreet'], ShipToBuilding = addr['ShipToBuilding'], ShipToCity = addr['ShipToCity'], BillToCountry = addr['BillToCountry'], U_SCOUNTRY = addr['U_SCOUNTRY'], U_SSTATE = addr['U_SSTATE'], U_SHPTYPB = addr['U_SHPTYPB'], U_BSTATE = addr['U_BSTATE'], U_BCOUNTRY = addr['U_BCOUNTRY'], U_SHPTYPS = addr['U_SHPTYPS'], gst_no=addr['gst_no'], pan_no=addr['pan_no'])
             model_add.save()
         except Exception as e:
             Order.objects.filter(pk=qt.id).delete()
             return Response({"message":str(e),"status":201,"data":[]})
-        
+        emp_obj = Employee.objects.filter(SalesEmployeeCode=SalesPersonCode).first()
+        if Order.objects.filter(id=fetchid).exists():
+            # comments = request.data['Venue'] as per frontend required 
+            activity_obj = Activity(SourceID=fetchid, Subject=CardName, Comment=request.data['Venue'], Emp=emp_obj.id, From=FunctionDate, 
+                    To=FunctionDate, Time=Time, Type="Event", SourceType="Order", CreateDate=CreateDate, 
+                    CreateTime=CreateTime, leadType="")      
+            activity_obj.save()
         # try:
         #     LineNum = 0
         #     for line in lines:
@@ -226,89 +235,90 @@ def create(request):
         
         #return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id}]})
             
-        if settings.SAPORD == True:
-            r = requests.post(settings.BASEURL+'/Login', data=json.dumps(settings.SAPDB), verify=False)
-            token = json.loads(r.text)['SessionId']
-            print(token)
-            qt_data = {
-                "TaxDate": request.data['TaxDate'],
-                "DocDueDate": request.data['DocDueDate'],
-                "ContactPersonCode": request.data['ContactPersonCode'],
-                "DiscountPercent": request.data['DiscountPercent'],
-                "DocDate": request.data['DocDate'],
-                "CardCode": request.data['CardCode'],
-                "CardName": request.data['CardName'],
-                "Comments": request.data['Comments'],
-                "SalesPersonCode": request.data['SalesPersonCode'],
-                "BPL_IDAssignedToInvoice": request.data['BPLID'],
-                "PaymentGroupCode":request.data['PaymentGroupCode'],
-                "U_PORTAL_NO":qt.id,
-                "AddressExtension": {
-                    "BillToBuilding": addr['BillToBuilding'],
-                    "ShipToState": addr['ShipToState'],
-                    "BillToCity": addr['BillToCity'],
-                    "ShipToCountry": addr['ShipToCountry'],
-                    "BillToZipCode": addr['BillToZipCode'],
-                    "ShipToStreet": addr['ShipToStreet'],
-                    "BillToState": addr['BillToState'],
-                    "ShipToZipCode": addr['ShipToZipCode'],
-                    "BillToStreet": addr['BillToStreet'],
-                    "ShipToBuilding": addr['ShipToBuilding'],
-                    "ShipToCity": addr['ShipToCity'],
-                    "BillToCountry": addr['BillToCountry']
-                },
-                "DocumentLines": ""
-            }
+        # if settings.SAPORD == True:
+        #     r = requests.post(settings.BASEURL+'/Login', data=json.dumps(settings.SAPDB), verify=False)
+        #     token = json.loads(r.text)['SessionId']
+        #     print(token)
+        #     qt_data = {
+        #         "TaxDate": request.data['TaxDate'],
+        #         "DocDueDate": request.data['DocDueDate'],
+        #         "ContactPersonCode": request.data['ContactPersonCode'],
+        #         "DiscountPercent": request.data['DiscountPercent'],
+        #         "DocDate": request.data['DocDate'],
+        #         "CardCode": request.data['CardCode'],
+        #         "CardName": request.data['CardName'],
+        #         "Comments": request.data['Comments'],
+        #         "SalesPersonCode": request.data['SalesPersonCode'],
+        #         "BPL_IDAssignedToInvoice": request.data['BPLID'],
+        #         "PaymentGroupCode":request.data['PaymentGroupCode'],
+        #         "U_PORTAL_NO":qt.id,
+        #         "AddressExtension": {
+        #             "BillToBuilding": addr['BillToBuilding'],
+        #             "ShipToState": addr['ShipToState'],
+        #             "BillToCity": addr['BillToCity'],
+        #             "ShipToCountry": addr['ShipToCountry'],
+        #             "BillToZipCode": addr['BillToZipCode'],
+        #             "ShipToStreet": addr['ShipToStreet'],
+        #             "BillToState": addr['BillToState'],
+        #             "ShipToZipCode": addr['ShipToZipCode'],
+        #             "BillToStreet": addr['BillToStreet'],
+        #             "ShipToBuilding": addr['ShipToBuilding'],
+        #             "ShipToCity": addr['ShipToCity'],
+        #             "BillToCountry": addr['BillToCountry']
+        #         },
+        #         "DocumentLines": ""
+        #     }
             
-            print(qt_data)
-            print(json.dumps(qt_data))
+        #     print(qt_data)
+        #     print(json.dumps(qt_data))
 
-            res = requests.post(settings.BASEURL+'/Orders', data=json.dumps(qt_data), cookies=r.cookies, verify=False)
-            live = json.loads(res.text)
+        #     res = requests.post(settings.BASEURL+'/Orders', data=json.dumps(qt_data), cookies=r.cookies, verify=False)
+        #     live = json.loads(res.text)
             
-            if "DocEntry" in live:
-                print(live['DocEntry'])
+        #     if "DocEntry" in live:
+        #         print(live['DocEntry'])
                 
-                model = Order.objects.get(pk = fetchid)
-                model.DocEntry = live['DocEntry']
-                model.save()
-                if int(U_LEADID) !=0:
-                    leadObj = Lead.objects.get(pk=U_LEADID)
-                    leadObj.ODStatus=1
-                    leadObj.save()
-                if U_OPPID !="":
-                    oppObj = Opportunity.objects.get(pk=U_OPPID)
-                    oppObj.ODStatus=1
-                    oppObj.save()
+        #         model = Order.objects.get(pk = fetchid)
+        #         model.DocEntry = live['DocEntry']
+        #         model.save()
+        #         if int(U_LEADID) !=0:
+        #             leadObj = Lead.objects.get(pk=U_LEADID)
+        #             leadObj.ODStatus=1
+        #             leadObj.save()
+        #         if U_OPPID !="":
+        #             oppObj = Opportunity.objects.get(pk=U_OPPID)
+        #             oppObj.ODStatus=1
+        #             oppObj.save()
                 
-                return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id, "DocEntry":live['DocEntry']}]})
-            else:
-                SAP_MSG = live['error']['message']['value']
-                print(SAP_MSG)
-                Order.objects.get(pk=qt.id).delete()
-                # allline = DocumentLines.objects.filter(OrderID=qt.id)
-                # for dcline in allline:
-                #     dcline.delete()
+        #         return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id, "DocEntry":live['DocEntry']}]})
+        #     else:
+        #         SAP_MSG = live['error']['message']['value']
+        #         print(SAP_MSG)
+        #         Order.objects.get(pk=qt.id).delete()
+        #         # allline = DocumentLines.objects.filter(OrderID=qt.id)
+        #         # for dcline in allline:
+        #         #     dcline.delete()
                     
-                alladd = AddressExtension.objects.filter(OrderID=qt.id)
-                for ad in alladd:
-                    ad.delete()
-                return Response({"message":SAP_MSG,"SAP_error":SAP_MSG, "status":202,"data":[]})
-        else:
-            model = Order.objects.get(pk = fetchid)
-            model.DocEntry = fetchid
-            model.save()
-            if int(U_LEADID) !=0:
-                leadObj = Lead.objects.get(pk=U_LEADID)
-                leadObj.ODStatus=1
-                leadObj.save()
-            if U_OPPID !="":
-                oppObj = Opportunity.objects.get(pk=U_OPPID)
-                oppObj.ODStatus=1
-                oppObj.save()
-            return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id, "DocEntry":qt.id}]})
-    except Exception as e:
-        return Response({"message":str(e),"status":201,"data":[]})
+        #         alladd = AddressExtension.objects.filter(OrderID=qt.id)
+        #         for ad in alladd:
+        #             ad.delete()
+        #         return Response({"message":SAP_MSG,"SAP_error":SAP_MSG, "status":202,"data":[]})
+        # else:
+        #     model = Order.objects.get(pk = fetchid)
+        #     model.DocEntry = fetchid
+        #     model.save()
+        #     if int(U_LEADID) !=0:
+        #         leadObj = Lead.objects.get(pk=U_LEADID)
+        #         leadObj.ODStatus=1
+        #         leadObj.save()
+        #     if U_OPPID !="":
+        #         oppObj = Opportunity.objects.get(pk=U_OPPID)
+        #         oppObj.ODStatus=1
+        #         oppObj.save()
+        #     return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id, "DocEntry":qt.id}]})
+        return Response({"message":"successful","status":200,"data":[{"qt_Id":qt.id, "DocEntry":qt.id}]})
+    # except Exception as e:
+    #     return Response({"message":str(e),"status":201,"data":[]})
 
 #Order Update API
 @api_view(['POST'])
@@ -371,7 +381,8 @@ def update(request):
         model.Coolers= request.data['Coolers']
         model.Decorations= request.data['Decorations']
         model.DJ= request.data['DJ']
-        model.OptionalCustomerName = request.data['OptionalCustomerName']
+        model.Fans = request.data['Fans']   
+        model.OptionalCustomerName = request.data['OptionalCustomerName'] 
         model.save()
         if AddressExtension.objects.filter(id = request.data['AddressExtension']['id']).exists():
             model_add = AddressExtension.objects.get(id = request.data['AddressExtension']['id'])           
@@ -393,6 +404,8 @@ def update(request):
             model_add.U_BSTATE = request.data['AddressExtension']['U_BSTATE']
             model_add.U_BCOUNTRY = request.data['AddressExtension']['U_BCOUNTRY']
             model_add.U_SHPTYPS = request.data['AddressExtension']['U_SHPTYPS']    
+            model_add.pan_no = request.data['AddressExtension']['pan_no']    
+            model_add.gst_no = request.data['AddressExtension']['gst_no']    
             model_add.save()    
         return Response({"message":"successful","status":200, "data":[json.loads(json.dumps(request.data))]})
     except Exception as e:
@@ -487,48 +500,8 @@ def OrderShow(Orders_obj):
                     finalOrder['BPMobile'] = ""
                     finalOrder['PAN_Card'] = ""
                     finalOrder['Address_Number'] = ""
-        #         if CustCode.objects.filter(OrderId=qt.id).exists(): 
-                    
-        #             model = CustCode.objects.filter(OrderId=qt.id)
-                    
-        #             BPURN = str(model[0].cc_prefix)+str('/URN1')+str(format(model[0].counter, '04'))
-        #             print("if BPURN: "+str(BPURN))
-                    
-        #             finalOrder['URN'] = BPURN 
-                    
-        #             OrdUrn = Order.objects.get(pk=qt.id)
-        #             OrdUrn.URN = BPURN
-                    
-        #             OrdUrn.save()
-                    
-        #         else:
-        #             print(BPCCCode)
-        #             if CustCode.objects.filter(cc_prefix=BPCCCode).exists():
-        #                 cc = CustCode.objects.filter(cc_prefix=BPCCCode).order_by('-id')[:1][0].counter 
-                        
-        #                 counter = int(cc) + 1
-        #                 print("if")
-        #                 model = CustCode(cc_prefix=BPCCCode, counter=counter, CustCodeBp=qt.CardCode, OrderId=qt.id)
-        #                 model.save()
-
-        #             else: 
-        #                 print("else")
-        #                 counter =1
-        #                 model = CustCode(cc_prefix=BPCCCode, CustCodeBp=qt.CardCode, counter =counter, OrderId=qt.id)
-        #                 model.save()
-                    
-        #             BPURN= str(BPCCCode)+str('/URN1')+str(format(counter, '04'))
-        #             finalOrder['URN'] = BPURN
-        #             print("else BPURN: "+str(BPURN))
-                    
-        #             OrdUrn = Order.objects.get(pk=qt.id)
-        #             OrdUrn.URN = BPURN
-        #             OrdUrn.save()
-                    
-        # else:
-        #     return Response({"message": "Customer Card Must Exist","status": 201,"data":[]})     
         
-        # print(cont_all)
+        
         if len(cont) > 0:
             #ContactPerson = cont[0].FirstName
             ContactPerson = cont_json.data
@@ -824,10 +797,11 @@ def all(request):
 #Order One API
 @api_view(["POST"])
 def one(request):
-    id=request.data['id']    
-    Orders_obj = Order.objects.filter(id=id)    
+    id=request.data['id']
+    
+    Orders_obj = Order.objects.filter(id=id)
+    
     allqt = OrderShow(Orders_obj)
-    print("allqt ::", allqt)
     return Response({"message": "Success","status": 200,"data":allqt})
 
 

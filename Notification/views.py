@@ -41,25 +41,25 @@ print(time)
 def all(request):
     Emp=request.data['Emp']
     noti_all = []
+    print("date.....",date)
+    act_obj = Notification.objects.filter(CreatedDate=date).order_by("-id")
+    act_json = NotificationSerializer(act_obj, many=True).data
+    # for obj in act_obj:
+    #     noti_json = {}
+    #     obj_json = NotificationSerializer(obj, many=False)
+    #     #print(obj_json.data)
+        
+    #     # noti_json["notification"] = obj_json.data
+    #     # #print(obj.SourceID)
+        
+    #     # act_src = Activity.objects.get(id=obj.SourceID)
+    #     # src_json = ActivitySerializer(act_src)   
+    #     # noti_json["source"] = src_json.data
+        
+    #     noti_all.append(noti_json)
+    #     print(noti_all)
     
-    act_obj = Notification.objects.filter(Emp=Emp, CreatedDate=date).order_by("-id")
-    #act_json = NotificationSerializer(act_obj, many=True)
-    for obj in act_obj:
-        noti_json = {}
-        obj_json = NotificationSerializer(obj, many=False)
-        #print(obj_json.data)
-        
-        noti_json["notification"] = obj_json.data
-        #print(obj.SourceID)
-        
-        act_src = Activity.objects.get(id=obj.SourceID)
-        src_json = ActivitySerializer(act_src)   
-        noti_json["source"] = src_json.data
-        
-        noti_all.append(noti_json)
-        print(noti_all)
-    
-    return Response({"message": "Success","status": 200,"data":noti_all})
+    return Response({"message": "Success","status": 200,"data":act_json})
 
 #Notification One API
 @api_view(["POST"])

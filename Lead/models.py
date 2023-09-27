@@ -54,6 +54,8 @@ class Lead(models.Model):
     Venue = models.CharField(max_length=60, blank=True)
     Reference = models.CharField(max_length=60, blank=True)
     NumberVisits = models.CharField(max_length=60, blank=True)
+    #added
+    Menu = models.CharField(max_length=100, blank=True)
 
 class Chatter(models.Model):
     Message = models.CharField(max_length=250, blank=True)

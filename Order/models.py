@@ -104,6 +104,8 @@ class Order(models.Model):
     DJ = models.CharField(max_length=50, blank=True)
     Fans = models.CharField(max_length=50, blank=True)
     OptionalCustomerName = models.CharField(max_length=60, blank=True)
+    
+    
 
 class AddressExtension(models.Model):
     OrderID = models.CharField(max_length=5, blank=True)
@@ -125,6 +127,10 @@ class AddressExtension(models.Model):
     U_BSTATE = models.CharField(max_length=100, blank=True)
     U_BCOUNTRY = models.CharField(max_length=100, blank=True)
     U_SHPTYPS = models.CharField(max_length=100, blank=True)
+    #added
+    gst_no = models.CharField(max_length=60, blank=True)
+    pan_no = models.CharField(max_length=60, blank=True)
+
 
 class DocumentLines(models.Model):
     LineNum = models.IntegerField(default=0)
