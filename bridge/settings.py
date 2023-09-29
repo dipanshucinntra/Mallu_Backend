@@ -128,10 +128,10 @@ DATABASES = {
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'mallu_pre',
+        'NAME': 'mallu_prod',
         'USER': 'root',
         #'PASSWORD': 'Sunil@123',
-        'PASSWORD': 'Mysql@123',
+        'PASSWORD': 'PUb4*#287#@5#@',
         'HOST': 'localhost',
         'PORT': '3306',
     }

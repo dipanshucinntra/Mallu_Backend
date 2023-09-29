@@ -8,18 +8,18 @@ import calendar
 
 # currentDate = date.today()
 # currentTime = datetime.today().strftime("%I:%M %p")
-
+print("############################ Mallu Form Cron Job For Notification ##################################")
 def none(inp):
 	if type(inp)!=int:
-		return 0;
+		return 0
 	else:
 		return inp
 
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="$Bridge@2022#",
-  database="mallu_pre"
+  password="PUb4*#287#@5#@",
+  database="mallu_prod"
 )
 
 

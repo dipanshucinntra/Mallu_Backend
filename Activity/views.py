@@ -182,10 +182,10 @@ def all_filter_by_date(request):
 #Chatter All API
 @api_view(["POST"])
 def chatter_all(request):
-    Emp=request.data['Emp']
+    # Emp=request.data['Emp']
     SourceID=request.data['SourceID']
     SourceType=request.data['SourceType']
-    chat_obj = Chatter.objects.filter(Emp=Emp, SourceType=SourceType, SourceID=SourceID).order_by("id")
+    chat_obj = Chatter.objects.filter(SourceType=SourceType, SourceID=SourceID).order_by("id")
     chat_json = ChatterSerializer(chat_obj, many=True)
     return Response({"message": "Success","status": 200,"data":chat_json.data})
 
